@@ -55,6 +55,8 @@ pub async fn pulsar_daemon_run(
     starter.add_module(desktop_notifier::DesktopNotifierModule)?;
     #[cfg(feature = "smtp-notifier")]
     starter.add_module(smtp_notifier::SmtpNotifierModule)?;
+    #[cfg(feature = "xdp-example")]
+    starter.add_module(xdp_example::pulsar::XdpExampleModule)?;
 
     customize_starter(&mut starter)?;
 

@@ -1,0 +1,22 @@
+[package]
+name = "xdp-example"
+version.workspace = true
+license.workspace = true
+edition.workspace = true
+repository.workspace = true
+
+[features]
+test-suite = [
+  "bpf-common/test-utils",
+]
+
+[dependencies]
+bpf-common = { workspace = true }
+pulsar-core = { workspace = true }
+
+tokio = { workspace = true, features = ["full"] }
+log = { workspace = true }
+nix = { workspace = true }
+
+[build-dependencies]
+bpf-builder = { workspace = true }

@@ -23,6 +23,7 @@ desktop-notifier = { workspace = true, optional = true }
 file-system-monitor = { workspace = true, optional = true }
 threat-logger = { workspace = true, optional = true }
 network-monitor = { workspace = true, optional = true }
+xdp-example = { workspace = true, optional = true }
 process-monitor = { workspace = true, optional = true }
 rules-engine = { workspace = true, optional = true }
 smtp-notifier = { workspace = true, optional = true }
@@ -42,7 +43,7 @@ tokio = { workspace = true, features = ["full"] }
 [features]
 default = ["full", "tls-openssl"]
 full = ["core", "extra"]
-core = ["threat-logger", "process-monitor", "network-monitor", "file-system-monitor"]
+core = ["threat-logger", "process-monitor", "network-monitor", "file-system-monitor", "xdp-example"]
 extra = ["rules-engine", "desktop-notifier", "smtp-notifier"]
 tls-openssl = ["smtp-notifier/tls-openssl"]
 tls-rustls = ["smtp-notifier/tls-rustls"]
@@ -59,6 +60,7 @@ members = [
     "crates/modules/threat-logger",
     "crates/modules/desktop-notifier",
     "crates/modules/smtp-notifier",
+    "crates/modules/xdp-example",
     "crates/pulsar-core",
     "crates/bpf-common",
     "crates/bpf-builder",
@@ -107,6 +109,7 @@ process-monitor = { path = "crates/modules/process-monitor", features = [
 ] }
 rules-engine = { path = "crates/modules/rules-engine" }
 smtp-notifier = { path = "crates/modules/smtp-notifier" }
+xdp-example = { path = "crates/modules/xdp-example" }
 # External
 anyhow = "1.0.75"
 aya = { version = "0.12.0", features = ["async_tokio"] }
