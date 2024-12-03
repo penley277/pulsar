@@ -259,9 +259,9 @@ impl ProgramBuilder {
         self
     }
 
-    pub fn xdp(mut self, name: &str) -> Self {
+    pub fn xdp(mut self, name: &str, interface: &str) -> Self {
         self.programs
-            .push(ProgramType::Xdp(name.to_string()));
+            .push(ProgramType::Xdp(name.to_string(), interface.to_string()));
         self
     }
 
@@ -316,7 +316,7 @@ enum ProgramType {
     Lsm(String),
     CgroupSkbEgress(String),
     CgroupSkbIngress(String),
-    Xdp(String),
+    Xdp(String, String),
 }
 
 impl Display for ProgramType {
@@ -333,7 +333,7 @@ impl Display for ProgramType {
             ProgramType::CgroupSkbIngress(cgroup_skb) => {
                 write!(f, "cgroup_skb/ingress {cgroup_skb}")
             }
-            ProgramType::Xdp(xdp) => write!(f, "xdp {xdp}"),
+            ProgramType::Xdp(xdp,interface) => write!(f, "xdp {xdp}"),
         }
     }
 }
@@ -389,10 +389,10 @@ impl ProgramType {
                     .attach(cgroup, CgroupSkbAttachType::Ingress)
                     .map_err(attach_err)?;
             }
-            ProgramType::Xdp(xdp) => {
+            ProgramType::Xdp(xdp, interface) => {
                 let program: &mut Xdp = extract_program(bpf, xdp)?;
                 program.load().map_err(load_err)?;
-                program.attach("wlp0s20f3", XdpFlags::SKB_MODE).map_err(attach_err)?;
+                program.attach(interface, XdpFlags::SKB_MODE).map_err(attach_err)?;
             }
         }
         Ok(())

@@ -8,23 +8,41 @@ use bpf_common::{
     ProgramBuilder, ProgramError,
 };
 use nix::sys::socket::{SockaddrIn, SockaddrIn6};
+use pulsar_core::pdk::{ConfigError, ModuleConfig};
+// use crate::pulsar::Config;
 
 const MODULE_NAME: &str = "xdp-example";
 
 pub async fn program(
     ctx: BpfContext,
     sender: impl BpfSender<NetworkEvent>,
+    config: Config,
 ) -> Result<Program, ProgramError> {
     let attach_to_lsm = ctx.lsm_supported();
     let binary = ebpf_program!(&ctx, "probes");
     let mut builder = ProgramBuilder::new(ctx, MODULE_NAME, binary)
-         .xdp("xdp_prog");
+         .xdp("xdp_prog", &*config.interface);
 
     let mut program = builder.start().await?;
     // program
     //     .read_events("map_output_network_event", sender)
     //     .await?;
     Ok(program)
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct Config {
+    interface: String,
+}
+
+impl TryFrom<&ModuleConfig> for Config {
+    type Error = ConfigError;
+
+    fn try_from(config: &ModuleConfig) -> Result<Self, Self::Error> {
+        Ok(Config {
+            interface: config.with_default("interface", "enp1s0".to_string())?.to_string(),
+        })
+    }
 }
 
 #[derive(Debug)]
@@ -129,11 +147,12 @@ pub mod pulsar {
         event::Host,
         pdk::{IntoPayload, ModuleContext, ModuleError, Payload, SimplePulsarModule},
     };
+    use pulsar_core::pdk::{ConfigError, ModuleConfig};
 
     pub struct XdpExampleModule;
 
     impl SimplePulsarModule for XdpExampleModule {
-        type Config = pulsar_core::pdk::NoConfig;
+        type Config = Config;
         type State = XdpExampleStatus;
 
         const MODULE_NAME: &'static str = MODULE_NAME;
@@ -141,7 +160,7 @@ pub mod pulsar {
 
         async fn init_state(
             &self,
-            _config: &Self::Config,
+            config: &Self::Config,
             ctx: &ModuleContext,
         ) -> Result<Self::State, ModuleError> {
             let dns_ctx: ModuleContext = ctx.clone();
@@ -153,7 +172,7 @@ pub mod pulsar {
                 });
 
             Ok(Self::State {
-                _ebpf_program: program(ctx.get_bpf_context(), sender).await?,
+                _ebpf_program: program(ctx.get_bpf_context(), sender, config.clone()).await?,
             })
         }
     }
