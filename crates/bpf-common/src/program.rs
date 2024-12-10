@@ -16,6 +16,7 @@ use aya::{
     util::online_cpus,
     Bpf, BpfLoader, Btf, BtfError, Pod,
 };
+use aya::programs::{tc, SchedClassifier, TcAttachType};
 use bpf_feature_autodetect::{autodetect_features, kernel_version::KernelVersion};
 use bpf_features::BpfFeatures;
 use bytes::{Buf, Bytes, BytesMut};
@@ -265,6 +266,18 @@ impl ProgramBuilder {
         self
     }
 
+    pub fn tc_ingress(mut self, name: &str, interface: &str) -> Self {
+        self.programs
+            .push(ProgramType::TcIngress(name.to_string(), interface.to_string()));
+        self
+    }
+
+    pub fn tc_egress(mut self, name: &str, interface: &str) -> Self {
+        self.programs
+            .push(ProgramType::TcEgress(name.to_string(), interface.to_string()));
+        self
+    }
+
     pub async fn start(self) -> Result<Program, ProgramError> {
         // We need to notify background tasks reading from maps that we're shutting down.
         // We must use oneshot::Receiver as the main shut down machanism because it has
@@ -317,6 +330,8 @@ enum ProgramType {
     CgroupSkbEgress(String),
     CgroupSkbIngress(String),
     Xdp(String, String),
+    TcIngress(String, String),
+    TcEgress(String, String),
 }
 
 impl Display for ProgramType {
@@ -333,7 +348,9 @@ impl Display for ProgramType {
             ProgramType::CgroupSkbIngress(cgroup_skb) => {
                 write!(f, "cgroup_skb/ingress {cgroup_skb}")
             }
-            ProgramType::Xdp(xdp,interface) => write!(f, "xdp {xdp}"),
+            ProgramType::Xdp(xdp,interface) => write!(f, "xdp {xdp} on {interface}"),
+            ProgramType::TcIngress(tc,interface) => write!(f, "tc {tc} on {interface}"),
+            ProgramType::TcEgress(tc,interface) => write!(f, "tc {tc} on {interface}")
         }
     }
 }
@@ -393,6 +410,16 @@ impl ProgramType {
                 let program: &mut Xdp = extract_program(bpf, xdp)?;
                 program.load().map_err(load_err)?;
                 program.attach(interface, XdpFlags::SKB_MODE).map_err(attach_err)?;
+            }
+            ProgramType::TcIngress(tc, interface) => {
+                let program: &mut SchedClassifier = extract_program(bpf, tc)?;
+                program.load().map_err(load_err)?;
+                program.attach(interface, TcAttachType::Ingress).map_err(attach_err)?;
+            }
+            ProgramType::TcEgress(tc, interface) => {
+                let program: &mut SchedClassifier = extract_program(bpf, tc)?;
+                program.load().map_err(load_err)?;
+                program.attach(interface, TcAttachType::Egress).map_err(attach_err)?;
             }
         }
         Ok(())

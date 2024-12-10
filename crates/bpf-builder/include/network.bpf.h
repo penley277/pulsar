@@ -38,3 +38,8 @@
 // Traffic direction.
 #define EGRESS 0
 #define INGRESS 1
+
+// Accept the packet in the TC program.
+#define TC_ACT_OK       1
+// Deny the packet in the TC program.
+#define TC_ACT_SHOT		2

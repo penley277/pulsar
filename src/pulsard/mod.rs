@@ -41,22 +41,25 @@ pub async fn pulsar_daemon_run(
 
     let mut starter = PulsarDaemonStarter::new(bus.clone(), config.clone()).await?;
 
-    #[cfg(feature = "process-monitor")]
-    starter.add_module(process_monitor::pulsar::ProcessMonitorModule)?;
-    #[cfg(feature = "file-system-monitor")]
-    starter.add_module(file_system_monitor::pulsar::FileSystemMonitorModule)?;
-    #[cfg(feature = "network-monitor")]
-    starter.add_module(network_monitor::pulsar::NetworkMonitorModule)?;
-    #[cfg(feature = "threat-logger")]
-    starter.add_module(threat_logger::ThreatLoggerModule)?;
+    // #[cfg(feature = "process-monitor")]
+    // starter.add_module(process_monitor::pulsar::ProcessMonitorModule)?;
+    // #[cfg(feature = "file-system-monitor")]
+    // starter.add_module(file_system_monitor::pulsar::FileSystemMonitorModule)?;
+    // #[cfg(feature = "network-monitor")]
+    // starter.add_module(network_monitor::pulsar::NetworkMonitorModule)?;
+    // #[cfg(feature = "threat-logger")]
+    // starter.add_module(threat_logger::ThreatLoggerModule)?;
     #[cfg(feature = "rules-engine")]
     starter.add_module(rules_engine::RuleEngineModule)?;
-    #[cfg(feature = "desktop-notifier")]
-    starter.add_module(desktop_notifier::DesktopNotifierModule)?;
-    #[cfg(feature = "smtp-notifier")]
-    starter.add_module(smtp_notifier::SmtpNotifierModule)?;
+    // #[cfg(feature = "desktop-notifier")]
+    // starter.add_module(desktop_notifier::DesktopNotifierModule)?;
+    // #[cfg(feature = "smtp-notifier")]
+    // starter.add_module(smtp_notifier::SmtpNotifierModule)?;
     #[cfg(feature = "xdp-example")]
     starter.add_module(xdp_example::pulsar::XdpExampleModule)?;
+
+    #[cfg(feature = "bmc-optimizer")]
+    starter.add_module(bmc_optimizer::pulsar::BmcOptimizerModule)?;
 
     customize_starter(&mut starter)?;
 

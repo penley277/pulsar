@@ -8,9 +8,9 @@ repository.workspace = true
 [dependencies]
 bpf-common = { workspace = true }
 bpf-filtering = { workspace = true }
-file-system-monitor = { workspace = true }
-network-monitor = { workspace = true }
-process-monitor = { workspace = true }
+#file-system-monitor = { workspace = true }
+#network-monitor = { workspace = true }
+#process-monitor = { workspace = true }
 libtest-mimic =  { workspace = true }
 tokio = { workspace = true }
 log = { workspace = true }

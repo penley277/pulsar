@@ -19,14 +19,9 @@ bpf-common = { workspace = true }
 engine-api = { workspace = true }
 pulsar-core = { workspace = true }
 # Modules
-desktop-notifier = { workspace = true, optional = true }
-file-system-monitor = { workspace = true, optional = true }
-threat-logger = { workspace = true, optional = true }
-network-monitor = { workspace = true, optional = true }
 xdp-example = { workspace = true, optional = true }
-process-monitor = { workspace = true, optional = true }
 rules-engine = { workspace = true, optional = true }
-smtp-notifier = { workspace = true, optional = true }
+bmc-optimizer = { workspace = true, optional = true }
 # External
 anyhow = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
@@ -41,26 +36,18 @@ semver = { workspace = true, features = ["serde"] }
 tokio = { workspace = true, features = ["full"] }
 
 [features]
-default = ["full", "tls-openssl"]
+default = ["full"]
 full = ["core", "extra"]
-core = ["threat-logger", "process-monitor", "network-monitor", "file-system-monitor", "xdp-example"]
-extra = ["rules-engine", "desktop-notifier", "smtp-notifier"]
-tls-openssl = ["smtp-notifier/tls-openssl"]
-tls-rustls = ["smtp-notifier/tls-rustls"]
-all-vendored = ["openssl-vendored", "sqlite3-vendored"]
-openssl-vendored = ["smtp-notifier?/openssl-vendored"]
+core = ["xdp-example", "bmc-optimizer"]
+extra = ["rules-engine"]
+all-vendored = [ "sqlite3-vendored"]
 sqlite3-vendored = ["bpf-common/sqlite3-vendored"]
 
 [workspace]
 members = [
-    "crates/modules/file-system-monitor",
-    "crates/modules/process-monitor",
-    "crates/modules/network-monitor",
     "crates/modules/rules-engine",
-    "crates/modules/threat-logger",
-    "crates/modules/desktop-notifier",
-    "crates/modules/smtp-notifier",
     "crates/modules/xdp-example",
+    "crates/modules/bmc-optimizer",
     "crates/pulsar-core",
     "crates/bpf-common",
     "crates/bpf-builder",
@@ -96,20 +83,10 @@ pulsar-core = { path = "crates/pulsar-core" }
 validatron = { path = "crates/validatron" }
 validatron-derive = { path = "crates/validatron/derive" }
 # Modules
-desktop-notifier = { path = "crates/modules/desktop-notifier" }
-file-system-monitor = { path = "crates/modules/file-system-monitor", features = [
-    "test-suite",
-] }
-threat-logger = { path = "crates/modules/threat-logger" }
-network-monitor = { path = "crates/modules/network-monitor", features = [
-    "test-suite",
-] }
-process-monitor = { path = "crates/modules/process-monitor", features = [
-    "test-suite",
-] }
 rules-engine = { path = "crates/modules/rules-engine" }
-smtp-notifier = { path = "crates/modules/smtp-notifier" }
 xdp-example = { path = "crates/modules/xdp-example" }
+bmc-optimizer = { path = "crates/modules/bmc-optimizer" }
+
 # External
 anyhow = "1.0.75"
 aya = { version = "0.12.0", features = ["async_tokio"] }

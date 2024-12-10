@@ -98,7 +98,7 @@ impl PulsarDaemonStarter {
     /// Create and start a [`PulsarDaemon`] actor to manage the underlying Pulsar modules.
     ///
     /// Returns the [`PulsarDaemonHandle`] that can be used to interact with the [`PulsarDaemon`] actor.
-    pub(super) async fn start_daemon(self) -> anyhow::Result<PulsarDaemonHandle> {
+    pub(super) async fn start_daemon(self) -> Result<PulsarDaemonHandle> {
         #[cfg(debug_assertions)]
         let trace_pipe_handle = bpf_common::trace_pipe::start().await;
 
@@ -185,7 +185,6 @@ impl PulsarDaemon {
             }
             PulsarDaemonCommand::StopModule {
                 tx_reply,
-
                 module_name,
             } => {
                 let _ = tx_reply.send(self.stop(&module_name).await);

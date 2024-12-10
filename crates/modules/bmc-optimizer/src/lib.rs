@@ -2,18 +2,17 @@ use std::{
     fmt,
     net::{Ipv4Addr, SocketAddr},
 };
-use std::ffi::c_long;
+
 use bpf_common::{
     ebpf_program, parsing::BufferIndex, program::BpfContext, BpfSender, Pid, Program,
     ProgramBuilder, ProgramError,
 };
 use nix::sys::socket::{SockaddrIn, SockaddrIn6};
-use bpf_common::aya::maps::{PerCpuArray, PerCpuValues};
-use bpf_common::aya::util::nr_cpus;
+use bpf_common::aya::programs::tc;
 use pulsar_core::pdk::{ConfigError, ModuleConfig};
 // use crate::pulsar::Config;
 
-const MODULE_NAME: &str = "xdp-example";
+const MODULE_NAME: &str = "bmc-optimizer";
 
 pub async fn program(
     ctx: BpfContext,
@@ -22,21 +21,11 @@ pub async fn program(
 ) -> Result<Program, ProgramError> {
     let attach_to_lsm = ctx.lsm_supported();
     let binary = ebpf_program!(&ctx, "probes");
+    let _ = tc::qdisc_add_clsact(&*config.interface);
     let mut builder = ProgramBuilder::new(ctx, MODULE_NAME, binary)
-         .xdp("xdp_bandwidth", &*config.interface);
+         .tc_ingress("tc_ingress", &*config.interface);
 
     let mut program = builder.start().await?;
-
-    let mut packet_stats: PerCpuArray<_, c_long> =
-        PerCpuArray::try_from(program.bpf().take_map("PACKET_STATS").expect("no maps named PACKET_STATS"))?;
-
-    for cpu_id in 0..packet_stats.len() {
-        if let Ok(stats) = packet_stats.get(&cpu_id, 0) {
-            for stats_per_cpu in stats.iter() {
-                println!("the value is {:?}", stats_per_cpu);
-            }
-        }
-    }
     // program
     //     .read_events("map_output_network_event", sender)
     //     .await?;
@@ -50,7 +39,6 @@ pub struct Config {
 
 impl TryFrom<&ModuleConfig> for Config {
     type Error = ConfigError;
-
     fn try_from(config: &ModuleConfig) -> Result<Self, Self::Error> {
         Ok(Config {
             interface: config.with_default("interface", "enp1s0".to_string())?.to_string(),
@@ -162,9 +150,9 @@ pub mod pulsar {
     };
     use pulsar_core::pdk::{ConfigError, ModuleConfig};
 
-    pub struct XdpExampleModule;
+    pub struct BmcOptimizerModule;
 
-    impl SimplePulsarModule for XdpExampleModule {
+    impl SimplePulsarModule for BmcOptimizerModule {
         type Config = Config;
         type State = XdpExampleStatus;
 
